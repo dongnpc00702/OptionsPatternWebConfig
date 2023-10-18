@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using Autofac;
+using System.Reflection;
 using System.Web.Http;
 using System.Web.Mvc;
-using System.Web.Optimization;
 using System.Web.Routing;
+using Autofac.Integration.WebApi;
+using ExampleInject.Infrastructure.AppSettings;
+using ExampleInject.Infrastructure.Extensions;
 
 namespace ExampleInject
 {
@@ -17,7 +17,16 @@ namespace ExampleInject
             GlobalConfiguration.Configure(WebApiConfig.Register);
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
-            BundleConfig.RegisterBundles(BundleTable.Bundles);
+
+            var builder = new ContainerBuilder();
+
+            // Configure options  
+            builder.AddOptions<ServiceSettings>("services");
+
+            //// Wire up with MVC WebAPI  
+            builder.RegisterApiControllers(Assembly.GetExecutingAssembly());
+            var webApiResolver = new AutofacWebApiDependencyResolver(builder.Build());
+            GlobalConfiguration.Configuration.DependencyResolver = webApiResolver;
         }
     }
 }
